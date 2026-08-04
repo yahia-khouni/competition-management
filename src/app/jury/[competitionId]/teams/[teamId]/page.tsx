@@ -1,72 +1,69 @@
 import { createClient } from '@/lib/supabase/server'
-import { submitScores } from './actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
+import { ScoringForm } from './scoring-form'
+import { ChevronLeft, Crosshair } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-export default async function ScoringPage({ params, searchParams }: { params: Promise<{ competitionId: string, teamId: string }>, searchParams: Promise<{ success?: string }> }) {
+export default async function TeamScoringPage({ params }: { params: Promise<{ competitionId: string, teamId: string }> }) {
   const { competitionId, teamId } = await params
-  const { success } = await searchParams
   const supabase = await createClient()
-
-  const { data: team } = await supabase.from('teams').select('name, robot_name').eq('id', teamId).single()
-  const { data: criteria } = await supabase.from('scoring_criteria').select('*').eq('competition_id', competitionId).order('order_index')
-  
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: existingScores } = await supabase.from('scores').select('*').eq('team_id', teamId).eq('jury_id', user?.id)
+  if (!user) redirect('/login')
 
-  const submitAction = submitScores.bind(null, competitionId, teamId)
+  // Verify jury assignment
+  const { data: assignment } = await supabase
+    .from('jury_assignments')
+    .select('*')
+    .eq('jury_id', user.id)
+    .eq('competition_id', competitionId)
+    .single()
+  
+  if (!assignment) notFound()
+
+  // Get Team & Competition
+  const { data: team } = await supabase.from('teams').select('*').eq('id', teamId).eq('competition_id', competitionId).single()
+  const { data: comp } = await supabase.from('competitions').select('*').eq('id', competitionId).single()
+  if (!team || !comp) notFound()
+
+  // Get Criteria
+  const { data: criteria } = await supabase.from('scoring_criteria').select('*').eq('competition_id', competitionId).order('order_index')
+
+  // Get Existing Scores from this Jury
+  const { data: existingScores } = await supabase
+    .from('scores')
+    .select('*')
+    .eq('team_id', teamId)
+    .eq('jury_id', user.id)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Score: {team?.name}</h1>
-          <p className="text-gray-500">Robot: {team?.robot_name}</p>
-        </div>
+    <div className="space-y-6 max-w-3xl mx-auto">
+      <div className="flex items-center gap-4">
         <Link href={`/jury/${competitionId}`}>
-          <Button variant="outline">Back to Teams</Button>
+          <Button variant="outline" size="icon" className="border-primary/30 text-primary hover:bg-primary/10">
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
         </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
+            <Crosshair className="w-8 h-8" /> {team.name}
+          </h1>
+          <p className="text-muted-foreground font-mono mt-1 tracking-widest uppercase">Robot: {team.robot_name}</p>
+        </div>
       </div>
 
-      {success && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-md">
-          Scores saved successfully!
+      <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-xl p-6 shadow-[0_0_20px_rgba(0,240,255,0.05)]">
+        <div className="mb-6 pb-4 border-b border-border/50">
+          <h2 className="text-lg font-mono text-primary tracking-widest uppercase">Evaluation Matrix</h2>
+          <p className="text-sm text-muted-foreground mt-1">Provide scores based on the defined criteria below.</p>
         </div>
-      )}
-
-      <form action={submitAction} className="space-y-8 bg-white p-6 rounded-lg border shadow-sm">
-        {criteria?.map((c) => {
-          const existing = existingScores?.find(s => s.criterion_id === c.id)
-          return (
-            <div key={c.id} className="space-y-3 pb-6 border-b last:border-0 last:pb-0">
-              <div>
-                <Label htmlFor={`score_${c.id}`} className="text-lg font-semibold">{c.name}</Label>
-                {c.description && <p className="text-sm text-gray-500 mb-2">{c.description}</p>}
-              </div>
-              <div className="flex items-center gap-4">
-                <Input 
-                  id={`score_${c.id}`} 
-                  name={`score_${c.id}`} 
-                  type="number" 
-                  step="0.1" 
-                  min={0} 
-                  max={c.max_score} 
-                  required 
-                  defaultValue={existing?.score}
-                  className="w-32" 
-                />
-                <span className="text-sm text-gray-500">/ {c.max_score} (Weight: {c.weight})</span>
-              </div>
-            </div>
-          )
-        })}
-
-        <div className="pt-4 flex gap-4">
-          <Button type="submit" size="lg" className="w-full md:w-auto">Save Scores</Button>
-        </div>
-      </form>
+        <ScoringForm 
+          teamId={teamId}
+          competitionId={competitionId}
+          criteria={criteria || []}
+          existingScores={existingScores || []}
+        />
+      </div>
     </div>
   )
 }

@@ -1,69 +1,90 @@
 import { createClient } from '@/lib/supabase/server'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Activity, ShieldCheck, AlertCircle } from 'lucide-react'
 
-export default async function JuryTeamsPage({ params }: { params: Promise<{ competitionId: string }> }) {
+export default async function JuryCompetitionDetails({ params }: { params: Promise<{ competitionId: string }> }) {
   const { competitionId } = await params
   const supabase = await createClient()
-
-  const { data: comp } = await supabase.from('competitions').select('name, status').eq('id', competitionId).single()
-  const { data: teams } = await supabase.from('teams').select('*').eq('competition_id', competitionId)
-  
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: myScores } = await supabase.from('scores').select('team_id').eq('jury_id', user?.id)
-  const scoredTeamIds = new Set(myScores?.map(s => s.team_id))
+  if (!user) redirect('/login')
+
+  // Verify assignment
+  const { data: assignment } = await supabase
+    .from('jury_assignments')
+    .select('*')
+    .eq('jury_id', user.id)
+    .eq('competition_id', competitionId)
+    .single()
+  
+  if (!assignment) notFound()
+
+  const { data: comp } = await supabase.from('competitions').select('*').eq('id', competitionId).single()
+  const { data: teams } = await supabase.from('teams').select('*').eq('competition_id', competitionId).order('name')
+  
+  // Get scores to check if a team is already scored by this jury
+  const { data: scores } = await supabase
+    .from('scores')
+    .select('team_id')
+    .eq('jury_id', user.id)
+
+  const scoredTeamIds = new Set(scores?.map(s => s.team_id))
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">{comp?.name} - Teams</h1>
-        <Link href="/jury">
-          <Button variant="outline">Back to Dashboard</Button>
-        </Link>
+    <div className="space-y-8">
+      <div className="flex items-start justify-between bg-card/30 backdrop-blur-sm border border-border/50 p-6 rounded-2xl shadow-[0_0_20px_rgba(0,240,255,0.05)]">
+        <div className="flex gap-4">
+          <div className="w-16 h-16 bg-primary/10 border border-primary/30 rounded-xl flex items-center justify-center">
+            <Activity className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-primary mb-1">{comp.name}</h1>
+            <p className="text-muted-foreground font-mono text-sm uppercase flex gap-4">
+              <span>Theme: <span className="text-foreground">{comp.theme}</span></span>
+              <span>Status: <span className="text-primary">{comp.status}</span></span>
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Team Name</TableHead>
-              <TableHead>Robot</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {teams?.map((t) => {
-              const hasScored = scoredTeamIds.has(t.id)
-              return (
-                <TableRow key={t.id}>
-                  <TableCell className="font-medium">{t.name}</TableCell>
-                  <TableCell>{t.robot_name}</TableCell>
-                  <TableCell>
-                    {hasScored ? (
-                      <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Scored</span>
+      <div>
+        <h2 className="text-xl font-bold text-primary font-mono tracking-widest uppercase mb-4">Target Squadrons</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          {teams?.map(t => {
+            const isScored = scoredTeamIds.has(t.id)
+            return (
+              <Card key={t.id} className={`hover:border-primary/50 transition-colors ${isScored ? 'bg-card/20' : ''}`}>
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-lg">{t.name}</h3>
+                    <p className="text-sm text-muted-foreground font-mono">{t.robot_name}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {isScored ? (
+                      <span className="flex items-center gap-1 text-sm font-mono text-primary/80 uppercase tracking-widest">
+                        <ShieldCheck className="w-4 h-4" /> Evaluated
+                      </span>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Pending</span>
+                      <span className="flex items-center gap-1 text-sm font-mono text-secondary-foreground uppercase tracking-widest">
+                        <AlertCircle className="w-4 h-4" /> Pending
+                      </span>
                     )}
-                  </TableCell>
-                  <TableCell className="text-right">
                     <Link href={`/jury/${competitionId}/teams/${t.id}`}>
-                      <Button variant={hasScored ? 'outline' : 'default'} size="sm">
-                        {hasScored ? 'Edit Score' : 'Score'}
+                      <Button variant={isScored ? "outline" : "default"} className="font-mono uppercase tracking-widest text-xs shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+                        {isScored ? 'Update' : 'Evaluate'}
                       </Button>
                     </Link>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-            {!teams?.length && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-6 text-gray-500">No teams found.</TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+          {!teams?.length && (
+            <p className="text-muted-foreground font-mono text-sm col-span-full">No squadrons available for evaluation.</p>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Activity, ShieldAlert, Cpu } from 'lucide-react'
 
 export default async function CompetitionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -17,79 +18,88 @@ export default async function CompetitionDetailsPage({ params }: { params: Promi
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{comp.name}</h1>
-          <p className="text-gray-500 mt-1">{comp.theme} • {comp.age_group} • Status: <span className="capitalize font-semibold">{comp.status}</span></p>
+      <div className="flex items-start justify-between bg-card/30 backdrop-blur-sm border border-border/50 p-6 rounded-2xl shadow-[0_0_20px_rgba(0,240,255,0.05)]">
+        <div className="flex gap-4">
+          <div className="w-16 h-16 bg-primary/10 border border-primary/30 rounded-xl flex items-center justify-center">
+            <Activity className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-primary mb-1">{comp.name}</h1>
+            <p className="text-muted-foreground font-mono text-sm uppercase flex gap-4">
+              <span>Theme: <span className="text-foreground">{comp.theme}</span></span>
+              <span>Age: <span className="text-foreground">{comp.age_group}</span></span>
+              <span>Status: <span className="text-primary glow-text">{comp.status}</span></span>
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Link href={`/admin/competitions/${id}/results`}>
-            <Button>View Results</Button>
+            <Button className="font-mono uppercase tracking-widest shadow-[0_0_10px_rgba(0,240,255,0.2)]">View Results</Button>
           </Link>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Scoring Criteria</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+            <CardTitle className="font-mono text-primary flex items-center gap-2"><ShieldAlert className="w-4 h-4"/> SCORING MATRIX</CardTitle>
             <Link href={`/admin/competitions/${id}/criteria/new`}>
-              <Button size="sm" variant="outline">Add Criterion</Button>
+              <Button size="sm" variant="outline" className="font-mono text-xs">Add Criterion</Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4 p-0">
             {criteria?.length ? (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Max</TableHead>
-                    <TableHead>Weight</TableHead>
+                <TableHeader className="bg-black/10">
+                  <TableRow className="border-border/50">
+                    <TableHead className="font-mono">NAME</TableHead>
+                    <TableHead className="font-mono text-center">MAX</TableHead>
+                    <TableHead className="font-mono text-center">WEIGHT</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {criteria.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.name}</TableCell>
-                      <TableCell>{c.max_score}</TableCell>
-                      <TableCell>{c.weight}</TableCell>
+                    <TableRow key={c.id} className="border-border/50">
+                      <TableCell className="font-medium text-foreground">{c.name}</TableCell>
+                      <TableCell className="text-center text-primary font-mono">{c.max_score}</TableCell>
+                      <TableCell className="text-center text-secondary-foreground font-mono">{c.weight}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-sm text-gray-500">No criteria defined yet.</p>
+              <div className="p-6 text-center text-sm text-muted-foreground font-mono">No criteria defined yet.</div>
             )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Teams</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+            <CardTitle className="font-mono text-primary flex items-center gap-2"><Cpu className="w-4 h-4"/> SQUADRONS</CardTitle>
             <Link href={`/admin/competitions/${id}/teams`}>
-              <Button size="sm" variant="outline">Manage Teams</Button>
+              <Button size="sm" variant="outline" className="font-mono text-xs">Manage Teams</Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4 p-0">
             {teams?.length ? (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Robot</TableHead>
+                <TableHeader className="bg-black/10">
+                  <TableRow className="border-border/50">
+                    <TableHead className="font-mono">NAME</TableHead>
+                    <TableHead className="font-mono">ROBOT</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {teams.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell className="font-medium">{t.name}</TableCell>
-                      <TableCell>{t.robot_name}</TableCell>
+                    <TableRow key={t.id} className="border-border/50">
+                      <TableCell className="font-medium text-foreground">{t.name}</TableCell>
+                      <TableCell className="text-muted-foreground font-mono">{t.robot_name}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-sm text-gray-500">No teams added yet.</p>
+              <div className="p-6 text-center text-sm text-muted-foreground font-mono">No teams added yet.</div>
             )}
           </CardContent>
         </Card>
