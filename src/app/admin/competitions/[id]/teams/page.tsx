@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
+import { Plus, Users, ChevronLeft } from 'lucide-react'
 
 export default async function TeamsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -15,54 +17,65 @@ export default async function TeamsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Manage Teams</h1>
+      <div className="flex items-center gap-4">
         <Link href={`/admin/competitions/${id}`}>
-          <Button variant="outline">Back to Competition</Button>
+          <Button variant="outline" size="icon" className="border-primary/30 text-primary hover:bg-primary/10">
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
         </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
+            <Users className="w-8 h-8" /> Manage Squadrons
+          </h1>
+          <p className="text-muted-foreground font-mono mt-1 tracking-widest uppercase">Target Directive Registry</p>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-1">
-          <div className="bg-white p-6 rounded-lg border shadow-sm">
-            <h2 className="text-xl font-bold mb-4">Add Team</h2>
-            <form action={createForComp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Team Name</Label>
-                <Input id="name" name="name" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="robot_name">Robot Name</Label>
-                <Input id="robot_name" name="robot_name" />
-              </div>
-              <Button type="submit" className="w-full">Add Team</Button>
-            </form>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-mono text-primary flex items-center gap-2"><Plus className="w-4 h-4"/> ADD SQUADRON</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form action={createForComp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-xs uppercase font-mono tracking-wider">Squadron Name</Label>
+                  <Input id="name" name="name" required className="bg-background/50 border-primary/20 focus:border-primary font-mono" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="robot_name" className="text-xs uppercase font-mono tracking-wider">Robot Name</Label>
+                  <Input id="robot_name" name="robot_name" className="bg-background/50 border-primary/20 focus:border-primary font-mono" />
+                </div>
+                <Button type="submit" className="w-full font-mono uppercase tracking-widest shadow-[0_0_15px_rgba(0,240,255,0.2)]">Add Squadron</Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="md:col-span-2">
-          <div className="bg-white rounded-md border">
+          <div className="rounded-xl border border-border bg-card/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.05)] overflow-hidden">
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Team Name</TableHead>
-                  <TableHead>Robot Name</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+              <TableHeader className="bg-black/20">
+                <TableRow className="border-border/50">
+                  <TableHead className="font-mono text-primary">SQUADRON NAME</TableHead>
+                  <TableHead className="font-mono text-primary">ROBOT NAME</TableHead>
+                  <TableHead className="font-mono text-primary text-right">ACTIONS</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {teams?.map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell className="font-medium">{t.name}</TableCell>
-                    <TableCell>{t.robot_name}</TableCell>
+                  <TableRow key={t.id} className="border-border/50 hover:bg-primary/5 transition-colors">
+                    <TableCell className="font-medium text-foreground">{t.name}</TableCell>
+                    <TableCell className="text-muted-foreground font-mono">{t.robot_name}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="text-red-500">Delete</Button>
+                      <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive font-mono uppercase tracking-widest text-xs">Delete</Button>
                     </TableCell>
                   </TableRow>
                 ))}
                 {!teams?.length && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center py-6 text-gray-500">No teams added yet.</TableCell>
+                    <TableCell colSpan={3} className="text-center py-6 text-muted-foreground font-mono">No squadrons added yet.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
