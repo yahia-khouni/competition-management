@@ -48,10 +48,8 @@ export default function AdminLayout({
       <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card/40 backdrop-blur-md sticky top-0 z-50">
         <Logo />
         <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="border-primary/30 text-primary">
-              <Menu className="w-5 h-5" />
-            </Button>
+          <SheetTrigger render={<Button variant="outline" size="icon" className="border-primary/30 text-primary" />}>
+            <Menu className="w-5 h-5" />
           </SheetTrigger>
           <SheetContent side="left" className="bg-background border-r-primary/20 w-72 p-6">
             <SheetTitle className="sr-only">Menu</SheetTitle>
