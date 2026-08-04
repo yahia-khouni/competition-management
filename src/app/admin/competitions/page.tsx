@@ -10,18 +10,20 @@ export default async function CompetitionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Trophy className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Competitions</h1>
+          <Trophy className="w-8 h-8 text-primary shrink-0" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">Competitions</h1>
         </div>
-        <Link href="/admin/competitions/new">
-          <Button className="gap-2 font-mono uppercase tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.2)]"><Plus className="w-4 h-4"/> Create Competition</Button>
+        <Link href="/admin/competitions/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto gap-2 font-mono uppercase tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+            <Plus className="w-4 h-4"/> Create
+          </Button>
         </Link>
       </div>
 
-      <div className="rounded-xl border border-border bg-card/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.05)] overflow-hidden">
-        <Table>
+      <div className="rounded-xl border border-border bg-card/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.05)] overflow-x-auto w-full max-w-full">
+        <Table className="min-w-[600px] w-full">
           <TableHeader className="bg-black/20">
             <TableRow className="border-border/50">
               <TableHead className="font-mono text-primary">NAME</TableHead>

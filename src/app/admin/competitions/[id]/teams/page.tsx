@@ -54,8 +54,8 @@ export default async function TeamsPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div className="md:col-span-2">
-          <div className="rounded-xl border border-border bg-card/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.05)] overflow-hidden">
-            <Table>
+          <div className="rounded-xl border border-border bg-card/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.05)] overflow-x-auto w-full">
+            <Table className="min-w-full">
               <TableHeader className="bg-black/20">
                 <TableRow className="border-border/50">
                   <TableHead className="font-mono text-primary">SQUADRON NAME</TableHead>

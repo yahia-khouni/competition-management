@@ -18,14 +18,14 @@ export default async function CompetitionDetailsPage({ params }: { params: Promi
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between bg-card/30 backdrop-blur-sm border border-border/50 p-6 rounded-2xl shadow-[0_0_20px_rgba(0,240,255,0.05)]">
-        <div className="flex gap-4">
-          <div className="w-16 h-16 bg-primary/10 border border-primary/30 rounded-xl flex items-center justify-center">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-card/30 backdrop-blur-sm border border-border/50 p-6 rounded-2xl shadow-[0_0_20px_rgba(0,240,255,0.05)]">
+        <div className="flex gap-4 items-center">
+          <div className="w-16 h-16 bg-primary/10 border border-primary/30 rounded-xl flex items-center justify-center shrink-0">
             <Activity className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-primary mb-1">{comp.name}</h1>
-            <p className="text-muted-foreground font-mono text-sm uppercase flex gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary mb-1">{comp.name}</h1>
+            <p className="text-muted-foreground font-mono text-sm uppercase flex flex-wrap gap-x-4 gap-y-1">
               <span>Theme: <span className="text-foreground">{comp.theme}</span></span>
               <span>Age: <span className="text-foreground">{comp.age_group}</span></span>
               <span>Status: <span className="text-primary glow-text">{comp.status}</span></span>
